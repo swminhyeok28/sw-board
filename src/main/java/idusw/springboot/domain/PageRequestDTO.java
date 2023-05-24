@@ -20,8 +20,9 @@ public class PageRequestDTO {
     private String keyword; // 검색어
 
     public PageRequestDTO() {
-        this.page = 1;
-        this.perPage = 10;
+        this.page = 13;
+        this.perPage = 5;
+        this.perPagination = 5;
     }
     public Pageable getPageable(Sort sort) {
         return PageRequest.of(page - 1, perPage, sort);
