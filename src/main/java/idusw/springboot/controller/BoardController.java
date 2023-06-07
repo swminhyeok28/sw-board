@@ -3,6 +3,7 @@ package idusw.springboot.controller;
 import idusw.springboot.domain.Board;
 import idusw.springboot.domain.Member;
 import idusw.springboot.domain.PageRequestDTO;
+import idusw.springboot.domain.PageResultDTO;
 import idusw.springboot.service.BoardService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -22,14 +23,12 @@ public class BoardController {
     }
 
     @GetMapping("/reg-form")
-    public String getRegForm(PageRequestDTO pageRequestDTO, Model model, HttpServletRequest request) {
+    public String getRegForm(Model model, HttpServletRequest request) {
         session = request.getSession();
         Member member = (Member) session.getAttribute("mb");
         if (member != null) {
             model.addAttribute("board", Board.builder().build());
-            System.out.println(member.getEmail());
-            //model.addAttribute("member", Member.builder().build());
-            return "/boards/reg-form";
+            return "/boards/reg-form"; // view
         } else
             return "redirect:/members/login-form"; // 로그인이 안된 상태인 경우
     }
@@ -38,18 +37,23 @@ public class BoardController {
     public String postBoard(@ModelAttribute("board") Board dto, Model model, HttpServletRequest request) {
         session = request.getSession();
         Member member = (Member) session.getAttribute("mb");
-        // form에서 hidden 전송하는 방식으로 변경
-        dto.setWriterSeq(member.getSeq());
-        dto.setWriterEmail(member.getEmail());
-        dto.setWriterName(member.getName());
+        if(member != null) {
+            // form에서 hidden 전송하는 방식으로 변경
+            dto.setWriterSeq(member.getSeq());
+            dto.setWriterEmail(member.getEmail());
+            dto.setWriterName(member.getName());
 
-        Long bno = Long.valueOf(boardService.registerBoard(dto));
+            Long bno = Long.valueOf(boardService.registerBoard(dto));
 
-        return "redirect:/boards"; // 등록 후 상세세 보기
+            return "redirect:/boards"; // 등록 후 목록 보기, redirection, get method
+        }else
+            return "redirect:/members/login-form"; // 로그인이 안된 상태인 경우
     }
 
     @GetMapping("")
-    public String getBoards(PageRequestDTO pageRequestDTO, Model model) {
+    public String getBoards(@ModelAttribute("pageRequestDTO") PageRequestDTO pageRequestDTO, Model model) { // 중간 본 수정
+        PageResultDTO<Board, Object[]> dto = boardService.findBoardAll(pageRequestDTO);
+        System.out.println(dto.getDtoList().size());
         model.addAttribute("list", boardService.findBoardAll(pageRequestDTO));
         return "/boards/list";
     }
@@ -59,8 +63,8 @@ public class BoardController {
         // Long bno 값을 사용하는 방식을 Board 객체에 bno를 설정하여 사용하는 방식으로 변경
         Board board = boardService.findBoardById(Board.builder().bno(bno).build());
         boardService.updateBoard(board);
-        model.addAttribute("dto", boardService.findBoardById(board));
-        return "/boards/read";
+        model.addAttribute("board", boardService.findBoardById(board));
+        return "/boards/detail";
     }
 
     @GetMapping("/{bno}/up-form")

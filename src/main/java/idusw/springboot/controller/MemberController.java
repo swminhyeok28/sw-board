@@ -43,7 +43,7 @@ public class MemberController {
                 .build();
         PageResultDTO<Member, MemberEntity> resultDTO = memberService.getList(pageRequestDTO);
         if(resultDTO != null) {
-            model.addAttribute("result", resultDTO); //page number list, map은 attribute name(Key - unique), attribute value으로 구성
+            model.addAttribute("result", resultDTO); //page number list, map은 attribute name(key), attribute value로 구성
             return "/members/list"; // view : template engine - thymeleaf .html
         }
         else
@@ -84,7 +84,7 @@ public class MemberController {
 
  */
 
-    @GetMapping("/register")
+    @GetMapping("/register-form")
     public String getRegisterForm(Model model) { // form 요청 -> view (template engine)
         model.addAttribute("member", Member.builder().build());
         return "/members/register";
